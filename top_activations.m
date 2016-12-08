@@ -46,3 +46,15 @@ for conv_i = 1:numel(conv_indicies)
 end
 scatter(layer_i_expanded, top10);
 % TODO add an indicator of nfilters per layer
+
+%% Get activations for all imgs
+imgs = dir('/home/osboxes/Documents/top_weights/imgs/*.jpg');
+allres = struct;
+
+for img = imgs'
+   fullpath = strcat(img.folder, '/', img.name);
+   disp(fullpath)
+   r = getres(fullpath, net);
+   nojpg = strrep(img.name, '.jpg', '');
+   allres.(strcat('i', nojpg)) = r;
+end
