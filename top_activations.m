@@ -116,7 +116,8 @@ for top10_idx = 1:numel(all_top10_fields)
 end
 
 %% Per layer, which M nodes were activated most frequently?
-M = 5;
+M = 15;
+topM = [];
 for layer_i = 1:5
    node_activation_counts = layer_map(layer_i);
    acts = cell2mat(values(node_activation_counts));
@@ -126,4 +127,19 @@ for layer_i = 1:5
    for cur = 1:M
        fprintf('idx: %d val: %d\n', sorted_idxs(cur), sorted_vals(cur));
    end
+   topM = [topM ; sorted_idxs(1:M)];
 end
+
+%% Plot top M nodes per layer across all images
+% x = layer_i
+% y = activation idx
+
+layer_i_expanded = [];
+for conv_i = 1:numel(conv_indicies)
+   layer_i_expanded = [layer_i_expanded; repmat(conv_indicies(conv_i) , M, 1)]; 
+end
+
+figure;
+scatter(layer_i_expanded, topM);
+title('Top 15 nodes activation plot');
+
