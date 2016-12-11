@@ -138,8 +138,16 @@ layer_i_expanded = [];
 for conv_i = 1:numel(conv_indicies)
    layer_i_expanded = [layer_i_expanded; repmat(conv_indicies(conv_i) , M, 1)]; 
 end
+norm_factor = [];
+for layer_i = 1:5
+    norm_factor = [norm_factor ; repmat(all_nfilters(int2str(layer_i)), M, 1)];
+end
+norm_factor = norm_factor ./ 2;
+topM_norm = topM - norm_factor;
 
 figure;
-scatter(layer_i_expanded, topM);
+scatter(layer_i_expanded, topM_norm);
 title('Top 15 nodes activation plot');
+set(gca,'XTickLabel',{' '});
+set(gca,'YTickLabel',{' '});
 
