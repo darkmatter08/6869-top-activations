@@ -147,7 +147,7 @@ topM_norm = topM - norm_factor;
 
 figure;
 scatter(layer_i_expanded, topM_norm);
-title('Top 15 nodes activation plot');
+title('Top 15 activated nodes');
 set(gca,'XTickLabel',{' '});
 set(gca,'YTickLabel',{' '});
 
