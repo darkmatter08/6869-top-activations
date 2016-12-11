@@ -21,6 +21,7 @@ for i = 1:nlayers(2)
 end
 
 %% Get top N activations per layer having fed forward 1 image
+all_nfilters = containers.Map;
 imgs_fields = fieldnames(allres);
 all_act_dets = struct;
 for img = 1:numel(imgs_fields)
@@ -32,6 +33,7 @@ for img = 1:numel(imgs_fields)
         layer_i = conv_indicies(conv_i) + 1;
         dets = [];
         [vol_x vol_y nfilters] = size(res(layer_i).x);
+        all_nfilters(int2str(conv_i)) = nfilters;
         for filter_i = 1:nfilters
             A = res(layer_i).x(:,:,filter_i);
             dets = [dets norm(A, 'fro')];
@@ -42,12 +44,12 @@ for img = 1:numel(imgs_fields)
 end
 
 %% Get top N activations per layer
+N = 10;
 all_act_dets_fields = fieldnames(all_act_dets);
 all_top10 = struct;
 for act_det = 1:numel(all_act_dets_fields)
     activation_determinants = all_act_dets.(all_act_dets_fields{act_det});
     top10 = [];
-    N = 10;
     for conv_i = 1:numel(conv_indicies)
         layer_i = conv_indicies(conv_i) + 1;
         nodes = getfield(activation_determinants, strcat('i', num2str(layer_i)));
@@ -79,4 +81,49 @@ for top10_idx = 1:numel(all_top10_fields)
     % TODO add an indicator of nfilters per layer
 end
 %close all
-    
+
+%% Set up nested map for next part
+% layer -> ( node_idx -> count)
+layer_names = fieldnames(activation_determinants);
+layer_map = containers.Map(...
+    {1, 2, 3, 4, 5}, ... %     layer_names, ... %TODO: generalize
+    {containers.Map, containers.Map, containers.Map, containers.Map, containers.Map} ...
+);
+
+for layer_i = 1:5
+   idx_to_count = layer_map(layer_i);
+   nfilters_layer = all_nfilters(int2str(layer_i));
+   for filt_i = 1:nfilters_layer
+       idx_to_count(int2str(filt_i)) = 0;
+   end
+end
+
+%% Populate nested map
+all_top10_fields = fieldnames(all_top10);
+for top10_idx = 1:numel(all_top10_fields)
+    top10 = all_top10.(all_top10_fields{top10_idx});
+    % each row contains N indicies, the most activated ones in that layer
+    top10_by_layer = reshape(top10, N, [])';
+    [r, c] = size(top10_by_layer);
+    for layer_i = 1:r
+        top10_acts = top10_by_layer(layer_i, :);
+        for act_i = 1:c
+            idx_to_count = layer_map(layer_i);
+            dictkey = int2str(top10_acts(act_i));
+            idx_to_count(dictkey) = idx_to_count(dictkey) + 1;
+        end
+    end
+end
+
+%% Per layer, which M nodes were activated most frequently?
+M = 5;
+for layer_i = 1:5
+   node_activation_counts = layer_map(layer_i);
+   acts = cell2mat(values(node_activation_counts));
+   
+   [sorted_vals, sorted_idxs] = sort(acts(:), 'descend');
+   fprintf('Layer %d: Top %d max activation indexes\n', layer_i, M);
+   for cur = 1:M
+       fprintf('idx: %d val: %d\n', sorted_idxs(cur), sorted_vals(cur));
+   end
+end
