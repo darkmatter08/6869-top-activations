@@ -1,6 +1,6 @@
 % do proj_setup.m
 %% Get activations for all imgs
-imgs = dir('/home/osboxes/Documents/top_weights/t_imgs/*.jpg');
+imgs = dir('/home/osboxes/Documents/top_weights/o_imgs/*.jpg');
 allres = struct;
 
 for img = imgs'
@@ -145,8 +145,8 @@ end
 norm_factor = norm_factor ./ 2;
 topM_norm = topM - norm_factor;
 
-
-scatter(layer_i_expanded, topM_norm, [], 'r');
+color = 'b';
+scatter(layer_i_expanded, topM_norm, [], color);
 title('Top 15 activated nodes per layer');
 set(gca,'XTickLabel',{' '});
 set(gca,'YTickLabel',{' '});
@@ -160,7 +160,8 @@ for layer_i = 1:NCONVLAYER-1
             line([expanded_rs(layer_i, i) expanded_rs(layer_i+1, j)], ...
                  [topM_norm_rs(layer_i, i) topM_norm_rs(layer_i+1, j)], ...
                  'LineStyle', ':', ...
-                 'LineWidth', 1 ...
+                 'LineWidth', 1, ...
+                 'Color', color ...
             );
         end
     end
