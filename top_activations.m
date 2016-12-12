@@ -1,6 +1,6 @@
 % do proj_setup.m
 %% Get activations for all imgs
-imgs = dir('/home/osboxes/Documents/top_weights/imgs/*.jpg');
+imgs = dir('/home/osboxes/Documents/top_weights/t_imgs/*.jpg');
 allres = struct;
 
 for img = imgs'
@@ -64,22 +64,21 @@ for act_det = 1:numel(all_act_dets_fields)
 end
 
 %% Plot max activations
-% x = layer_i
-% y = activation idx
 
-all_top10_fields = fieldnames(all_top10);
-for top10_idx = 1:numel(all_top10_fields)
-    top10 = all_top10.(all_top10_fields{top10_idx});
-    layer_i_expanded = [];
-    for conv_i = 1:numel(conv_indicies)
-       layer_i_expanded = [layer_i_expanded; repmat(conv_indicies(conv_i) , N, 1)]; 
-    end
-    figure;
-    scatter(layer_i_expanded, top10);
-    fname = strrep(all_top10_fields{top10_idx}, '_', '\_');
-    title(strcat('Top10 Activation plot for :', ' ', fname));
-    % TODO add an indicator of nfilters per layer
-end
+% all_top10_fields = fieldnames(all_top10);
+% for top10_idx = 1:numel(all_top10_fields)
+%     top10 = all_top10.(all_top10_fields{top10_idx});
+%     layer_i_expanded = [];
+%     for conv_i = 1:numel(conv_indicies)
+%        layer_i_expanded = [layer_i_expanded; repmat(conv_indicies(conv_i) , N, 1)]; 
+%     end
+%     figure;
+%     scatter(layer_i_expanded, top10);
+%     fname = strrep(all_top10_fields{top10_idx}, '_', '\_');
+%     title(strcat('Top10 Activation plot for :', ' ', fname));
+%     % TODO add an indicator of nfilters per layer
+% end
+
 %close all
 
 %% Set up nested map for next part
@@ -146,8 +145,8 @@ end
 norm_factor = norm_factor ./ 2;
 topM_norm = topM - norm_factor;
 
-figure;
-scatter(layer_i_expanded, topM_norm, 'b');
+
+scatter(layer_i_expanded, topM_norm, [], 'r');
 title('Top 15 activated nodes per layer');
 set(gca,'XTickLabel',{' '});
 set(gca,'YTickLabel',{' '});
