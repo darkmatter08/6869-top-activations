@@ -84,13 +84,14 @@ end
 
 %% Set up nested map for next part
 % layer -> ( node_idx -> count)
+NCONVLAYER = 5;
 layer_names = fieldnames(activation_determinants);
 layer_map = containers.Map(...
     {1, 2, 3, 4, 5}, ... %     layer_names, ... %TODO: generalize
     {containers.Map, containers.Map, containers.Map, containers.Map, containers.Map} ...
 );
 
-for layer_i = 1:5
+for layer_i = 1:NCONVLAYER
    idx_to_count = layer_map(layer_i);
    nfilters_layer = all_nfilters(int2str(layer_i));
    for filt_i = 1:nfilters_layer
@@ -118,7 +119,7 @@ end
 %% Per layer, which M nodes were activated most frequently?
 M = 15;
 topM = [];
-for layer_i = 1:5
+for layer_i = 1:NCONVLAYER
    node_activation_counts = layer_map(layer_i);
    acts = cell2mat(values(node_activation_counts));
    
@@ -139,15 +140,29 @@ for conv_i = 1:numel(conv_indicies)
    layer_i_expanded = [layer_i_expanded; repmat(conv_indicies(conv_i) , M, 1)]; 
 end
 norm_factor = [];
-for layer_i = 1:5
+for layer_i = 1:NCONVLAYER
     norm_factor = [norm_factor ; repmat(all_nfilters(int2str(layer_i)), M, 1)];
 end
 norm_factor = norm_factor ./ 2;
 topM_norm = topM - norm_factor;
 
 figure;
-scatter(layer_i_expanded, topM_norm);
-title('Top 15 activated nodes');
+scatter(layer_i_expanded, topM_norm, 'b');
+title('Top 15 activated nodes per layer');
 set(gca,'XTickLabel',{' '});
 set(gca,'YTickLabel',{' '});
 
+% Draw connecting lines:
+for layer_i = 1:NCONVLAYER-1
+    expanded_rs = reshape(layer_i_expanded, M, [])';
+    topM_norm_rs = reshape(topM_norm, M, [])';
+    for i = 1:M
+        for j = 1:M
+            line([expanded_rs(layer_i, i) expanded_rs(layer_i+1, j)], ...
+                 [topM_norm_rs(layer_i, i) topM_norm_rs(layer_i+1, j)], ...
+                 'LineStyle', ':', ...
+                 'LineWidth', 1 ...
+            );
+        end
+    end
+end
